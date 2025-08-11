@@ -1,5 +1,5 @@
 # Ansible dependencies with pinned versions for security
-# Updated to fix CVE-2024-26130 and other security issues
+# Updated to fix CVE-2024-26130 and CVE-2024-6345
 ansible==10.7.0
 ansible-core==2.17.7
 cryptography==42.0.4  # Fixed CVE-2024-26130
@@ -7,3 +7,4 @@ Jinja2==3.1.4
 PyYAML==6.0.2
 paramiko==3.4.1
 pip-audit==2.7.3  # Added for vulnerability scanning
+setuptools==70.0.0  # Fixed CVE-2024-6345 (RCE vulnerability)
