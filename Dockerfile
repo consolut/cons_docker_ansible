@@ -50,6 +50,7 @@ ENV ZSH="/home/ansible/.oh-my-zsh"
 RUN git clone --depth=1 --branch master https://github.com/ohmyzsh/ohmyzsh.git "${ZSH}"
 
 # Install ZSH plugins (using latest stable versions for compatibility)
+# Note: FZF removed due to build complexity and external dependencies
 RUN git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH}/custom/plugins/zsh-autosuggestions" && \
     git clone --depth=1 https://github.com/zsh-users/zsh-completions "${ZSH}/custom/plugins/zsh-completions" && \
     git clone --depth=1 https://github.com/zsh-users/zsh-history-substring-search.git "${ZSH}/custom/plugins/zsh-history-substring-search" && \
