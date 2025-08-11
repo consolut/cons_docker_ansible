@@ -55,7 +55,7 @@ RUN git clone --branch v0.7.0 --depth=1 https://github.com/zsh-users/zsh-autosug
     git clone --branch v1.1.0 --depth=1 https://github.com/zsh-users/zsh-history-substring-search.git "${ZSH}/custom/plugins/zsh-history-substring-search" && \
     git clone --branch v4.15.0 --depth=1 https://github.com/denysdovhan/spaceship-prompt.git "${ZSH}/custom/themes/spaceship-prompt" && \
     git clone --branch 0.8.0 --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH}/custom/plugins/zsh-syntax-highlighting" && \
-    git clone --branch v0.44.0 --depth=1 https://github.com/junegunn/fzf.git "/home/ansible/.fzf" && \
+    git clone --branch 0.44.0 --depth=1 https://github.com/junegunn/fzf.git "/home/ansible/.fzf" && \
     /home/ansible/.fzf/install --no-bash --no-fish --no-update-rc
 
 
