@@ -37,7 +37,7 @@ docker buildx build --platform linux/amd64,linux/arm64 \
 docker buildx rm multiarch
 ```
 
-**Note:** Currently the image on Docker Hub is ARM64 only. Multi-architecture support coming soon.
+**Note:** The image on Docker Hub supports both ARM64 and AMD64 architectures.
 
 ## Usage
 
