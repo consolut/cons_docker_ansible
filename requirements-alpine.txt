@@ -12,15 +12,15 @@ ansible==10.7.0
 ansible-core==2.17.7
 
 # Security-critical dependencies
-cryptography==43.0.3  # Fixed CVE-2024-26130, GHSA-h4gh-qq45-vh27, CVE-2024-12797
-paramiko==3.4.1
-bcrypt==4.1.2
+cryptography==44.0.0  # Fixed CVE-2024-26130, GHSA-h4gh-qq45-vh27, CVE-2024-12797
+paramiko==3.5.0  # Updated with cryptography 44.0.0
+bcrypt==4.2.1  # Latest stable version
 pynacl==1.5.0
 
 # Template and configuration
-Jinja2==3.1.5  # Fixed CVE-2025-27516, CVE-2024-56326, CVE-2024-56201
+Jinja2==3.1.6  # Fixed CVE-2025-27516, CVE-2024-56326, CVE-2024-56201
 PyYAML==6.0.2
-MarkupSafe==3.0.2  # Updated for Jinja2 3.1.5 compatibility
+MarkupSafe==3.0.2  # Updated for Jinja2 3.1.6 compatibility
 
 # Additional dependencies
 cffi==1.17.1
