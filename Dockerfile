@@ -36,17 +36,15 @@ RUN chown -R ansible:ansible "${ANSIBLE_HOME}"/.ssh
 # Users can override for specific hosts if needed
 RUN echo "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" >> "${ANSIBLE_HOME}"/.ssh/config
 
-# Remove old setuptools from system and prepare for venv
-RUN python3 -m pip uninstall -y setuptools && \
-    rm -rf /usr/lib/python3/dist-packages/setuptools* /usr/lib/python3/dist-packages/pkg_resources
-
 #switch to ansible user and install and configure zsh/ohmayzsh
 USER ansible
 SHELL ["/bin/bash", "-c"]
 
-# Create venv without system packages to ensure clean environment
+# Create isolated venv without system packages and install pip/setuptools from scratch
 RUN python3 -m venv --without-pip "${VENV_NAME}" && \
-    curl -sS https://bootstrap.pypa.io/get-pip.py | "${VENV_NAME}"/bin/python3 -
+    curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py && \
+    "${VENV_NAME}"/bin/python3 /tmp/get-pip.py pip==24.0 setuptools==78.1.1 && \
+    rm /tmp/get-pip.py
 
 RUN source "${VENV_NAME}"/bin/activate 
 ENV PATH="${VENV_NAME}/bin:/home/ansible/.local/bin:${PATH}"
@@ -67,11 +65,12 @@ RUN git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH}
 # Copy requirements file for dependency management
 COPY --chown=ansible:ansible requirements.txt /tmp/requirements.txt
 
-# Install secure versions of pip and setuptools in venv
-RUN "${VENV_NAME}"/bin/python3 -m pip install --upgrade pip==24.0 setuptools==78.1.1 && \
-    "${VENV_NAME}"/bin/python3 -m pip install -r /tmp/requirements.txt && \
+# Install dependencies and verify setuptools version
+RUN pip3 install --upgrade setuptools==78.1.1 && \
+    pip3 install -r /tmp/requirements.txt && \
     rm /tmp/requirements.txt && \
-    "${VENV_NAME}"/bin/python3 -m pip list | grep setuptools
+    echo "Installed setuptools version:" && \
+    pip3 list | grep setuptools
 
 # copy only ZSH configuration into image
 # SSH keys should be mounted at runtime, not built into image
