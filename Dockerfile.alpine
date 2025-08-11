@@ -22,7 +22,6 @@ RUN apk update && \
     git \
     zsh \
     curl \
-    wget \
     vim \
     sudo \
     ca-certificates \
