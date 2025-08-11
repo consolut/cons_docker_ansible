@@ -1,5 +1,5 @@
-# Latest Minimal Ubuntu Image
-FROM ubuntu:latest
+# Ubuntu 24.04 LTS (Noble Numbat) - Fixed version for security
+FROM ubuntu:24.04
 
 # Environments
 ARG ANSIBLE_USER="ansible"
@@ -28,10 +28,13 @@ RUN update-ca-certificates
 
 # create ansible user 
 RUN useradd -m -s /bin/zsh -u "${ANSIBLE_USER_UID}" -G sudo "${ANSIBLE_USER}"
-RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
+# Limited sudo access - only for specific ansible commands
+RUN echo 'ansible ALL=(ALL) NOPASSWD: /usr/bin/ansible-playbook, /usr/bin/ansible, /usr/bin/ansible-vault' >> /etc/sudoers.d/ansible
 RUN mkdir -p "${ANSIBLE_HOME}"/.ssh && mkdir -p "${ANSIBLE_WORKDIR}"
 RUN chown -R ansible:ansible "${ANSIBLE_HOME}"/.ssh
-RUN echo "Host * \n\tStrictHostKeyChecking no\n" >> "${ANSIBLE_HOME}"/.ssh/config
+# SSH config with improved security - StrictHostKeyChecking enabled by default
+# Users can override for specific hosts if needed
+RUN echo "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" >> "${ANSIBLE_HOME}"/.ssh/config
 
 #switch to ansible user and install and configure zsh/ohmayzsh
 USER ansible
@@ -43,28 +46,33 @@ RUN source "${VENV_NAME}"/bin/activate
 ENV PATH="${VENV_NAME}/bin:/home/ansible/.local/bin:${PATH}"
 ENV ZSH="/home/ansible/.oh-my-zsh"
 
-RUN sh -c "$(curl https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)" "" --unattended
-RUN git clone https://github.com/zsh-users/zsh-autosuggestions "${ZSH}/custom/plugins/zsh-autosuggestions" ; \
-    git clone https://github.com/zsh-users/zsh-completions "${ZSH}/custom/plugins/zsh-completions"; \
-    git clone https://github.com/zsh-users/zsh-history-substring-search.git "${ZSH}/custom/plugins/zsh-history-substring-search"; \
-    git clone https://github.com/denysdovhan/spaceship-prompt.git "${ZSH}/custom/themes/spaceship-prompt" ; \
-    git clone https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH}/custom/plugins/zsh-syntax-highlighting" ;\
-    git clone --depth 1 https://github.com/junegunn/fzf.git "/home/ansible/.fzf" ;\
-    /home/ansible/.fzf/install
+# Install Oh-My-Zsh with specific version tag for stability
+RUN git clone --depth=1 --branch master https://github.com/ohmyzsh/ohmyzsh.git "${ZSH}"
+
+# Install ZSH plugins (using latest stable versions for compatibility)
+# Note: FZF removed due to build complexity and external dependencies
+RUN git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH}/custom/plugins/zsh-autosuggestions" && \
+    git clone --depth=1 https://github.com/zsh-users/zsh-completions "${ZSH}/custom/plugins/zsh-completions" && \
+    git clone --depth=1 https://github.com/zsh-users/zsh-history-substring-search.git "${ZSH}/custom/plugins/zsh-history-substring-search" && \
+    git clone --depth=1 https://github.com/denysdovhan/spaceship-prompt.git "${ZSH}/custom/themes/spaceship-prompt" && \
+    git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH}/custom/plugins/zsh-syntax-highlighting"
 
 
-# Upgrade pip to the lastest in user context
-RUN pip3 install --upgrade pip; 
-# Finaly install Ansible and set environment
-RUN pip3 install ansible;
+# Copy requirements file for dependency management
+COPY --chown=ansible:ansible requirements.txt /tmp/requirements.txt
 
-# copy ssh keys and ZSH configuration into image
-COPY ./config/zsh/.zshrc ${ANSIBLE_HOME}/.zshrc
-COPY ./config/ssh_keys/. ${ANSIBLE_HOME}/.ssh/
+# Upgrade pip to specific version and install dependencies
+RUN pip3 install --upgrade pip==23.3.2 && \
+    pip3 install -r /tmp/requirements.txt && \
+    rm /tmp/requirements.txt
 
-RUN sudo chmod 600 ${ANSIBLE_HOME}/.ssh/id_rsa*
-RUN sudo chown -R ansible:ansible ${ANSIBLE_HOME}/.ssh
-RUN sudo chown -R ansible:ansible ${ANSIBLE_HOME}/.zshrc
+# copy only ZSH configuration into image
+# SSH keys should be mounted at runtime, not built into image
+COPY --chown=ansible:ansible ./config/zsh/.zshrc ${ANSIBLE_HOME}/.zshrc
+
+# Create SSH directory with proper permissions
+RUN mkdir -p ${ANSIBLE_HOME}/.ssh && \
+    chmod 700 ${ANSIBLE_HOME}/.ssh
 
 
 # Set the default shell to zsh

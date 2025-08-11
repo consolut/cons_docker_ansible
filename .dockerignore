@@ -1,0 +1,66 @@
+# Git
+.git
+.gitignore
+.github
+
+# Documentation
+*.md
+LICENSE
+docs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Ansible
+*.retry
+ansible.log
+
+# Security - Never include secrets
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+config/ssh_keys/*
+!config/ssh_keys/.gitkeep
+!config/ssh_keys/README.md
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
+*.orig
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Test files
+tests/
+test_*
+*_test.py
+
+# Local development
+.env
+.env.local
+docker-compose.override.yml
