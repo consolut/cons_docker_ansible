@@ -61,8 +61,8 @@ RUN git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH}
 # Copy requirements file for dependency management
 COPY --chown=ansible:ansible requirements.txt /tmp/requirements.txt
 
-# Upgrade pip and setuptools to secure versions (CVE-2024-6345 fix)
-RUN pip3 install --upgrade pip==24.0 setuptools==70.0.0 && \
+# Upgrade pip and setuptools to secure versions (CVE-2024-6345 and CVE-2025-47273 fix)
+RUN pip3 install --upgrade pip==24.0 setuptools==78.1.1 && \
     pip3 install -r /tmp/requirements.txt && \
     rm /tmp/requirements.txt
 

@@ -93,9 +93,15 @@ Eine umfassende Sicherheitsanalyse wurde durchgeführt und alle 8 identifizierte
 
 2. **CVE-2024-6345 - Setuptools RCE**
    - **Status**: ✅ BEHOBEN  
-   - **Version**: setuptools==70.0.0
+   - **Version**: setuptools==78.1.1
    - **CVSS**: 8.8 (HIGH)
    - **Details**: Remote Code Execution über package_index module
+
+3. **CVE-2025-47273 - Setuptools Path Traversal**
+   - **Status**: ✅ BEHOBEN
+   - **Version**: setuptools==78.1.1  
+   - **CVSS**: 7.7 (HIGH)
+   - **Details**: Path Traversal in PackageIndex.download, Arbitrary File Write
 
 
 ### Zusätzliche Verbesserungen
@@ -131,7 +137,8 @@ Eine umfassende Sicherheitsanalyse wurde durchgeführt und alle 8 identifizierte
 
 ### Erledigt ✅
 - [x] CVE-2024-26130: cryptography auf 42.0.4 aktualisiert
-- [x] CVE-2024-6345: setuptools auf 70.0.0 aktualisiert
+- [x] CVE-2024-6345: setuptools RCE behoben (78.1.1)
+- [x] CVE-2025-47273: setuptools Path Traversal behoben (78.1.1)
 - [x] Alle kritischen Sicherheitslücken behoben
 
 ### Kurzfristig (P1)
