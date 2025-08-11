@@ -1,6 +1,15 @@
 # Alpine Linux 3.20 - Slim, secure base image
 FROM alpine:3.20
 
+# Add metadata labels for better SBOM generation
+LABEL org.opencontainers.image.title="Ansible Docker Alpine"
+LABEL org.opencontainers.image.description="Secure Ansible automation platform on Alpine Linux"
+LABEL org.opencontainers.image.version="2024.1"
+LABEL org.opencontainers.image.vendor="rotecodefraktion"
+LABEL org.opencontainers.image.licenses="GPL-3.0"
+LABEL org.opencontainers.image.source="https://github.com/davidkrcek/docker_ansible"
+LABEL org.opencontainers.image.documentation="https://github.com/davidkrcek/docker_ansible/blob/main/README.md"
+
 # Environments
 ARG ANSIBLE_USER="ansible"
 ARG ANSIBLE_USER_UID="1002"
