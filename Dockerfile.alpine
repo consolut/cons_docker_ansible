@@ -1,0 +1,102 @@
+# Alpine Linux 3.20 - Slim, secure base image
+FROM alpine:3.20
+
+# Environments
+ARG ANSIBLE_USER="ansible"
+ARG ANSIBLE_USER_UID="1002"
+ARG ANSIBLE_HOME="/home/ansible"
+ARG ANSIBLE_WORKDIR="/install/ansible"
+ENV VENV_NAME="${ANSIBLE_HOME}/venv"
+
+# Install system packages
+RUN apk update && \
+    apk add --no-cache \
+    python3 \
+    py3-pip \
+    py3-virtualenv \
+    gcc \
+    python3-dev \
+    musl-dev \
+    libffi-dev \
+    openssl-dev \
+    openssh-client \
+    git \
+    zsh \
+    curl \
+    wget \
+    vim \
+    sudo \
+    ca-certificates \
+    tzdata && \
+    # Set timezone
+    cp /usr/share/zoneinfo/UTC /etc/localtime && \
+    echo "UTC" > /etc/timezone
+
+# Add local certificates for zscaler & Co. support
+COPY config/cacerts /tmp/cacerts
+RUN if [ -d /tmp/cacerts ] && [ "$(ls -A /tmp/cacerts 2>/dev/null)" ]; then \
+        cp /tmp/cacerts/* /usr/local/share/ca-certificates/ && \
+        update-ca-certificates; \
+    fi && \
+    rm -rf /tmp/cacerts
+
+# Create ansible user with zsh shell
+RUN adduser -D -s /bin/zsh -u "${ANSIBLE_USER_UID}" -h "${ANSIBLE_HOME}" "${ANSIBLE_USER}" && \
+    addgroup "${ANSIBLE_USER}" wheel && \
+    # Limited sudo access - only for specific ansible commands
+    echo '%wheel ALL=(ALL) NOPASSWD: /usr/bin/ansible-playbook, /usr/bin/ansible, /usr/bin/ansible-vault' > /etc/sudoers.d/ansible && \
+    mkdir -p "${ANSIBLE_HOME}/.ssh" && \
+    mkdir -p "${ANSIBLE_WORKDIR}" && \
+    chown -R "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_HOME}" && \
+    chown -R "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_WORKDIR}" && \
+    # SSH config with improved security
+    echo "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" >> "${ANSIBLE_HOME}/.ssh/config" && \
+    chown "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_HOME}/.ssh/config" && \
+    chmod 600 "${ANSIBLE_HOME}/.ssh/config"
+
+# Switch to ansible user
+USER ansible
+SHELL ["/bin/sh", "-c"]
+
+# Create virtual environment and install pip with specific setuptools version
+RUN python3 -m venv "${VENV_NAME}" && \
+    "${VENV_NAME}/bin/pip" install --no-cache-dir --upgrade pip==24.0 && \
+    "${VENV_NAME}/bin/pip" install --no-cache-dir setuptools==78.1.1 wheel
+
+# Set PATH to use venv
+ENV PATH="${VENV_NAME}/bin:${ANSIBLE_HOME}/.local/bin:${PATH}"
+ENV ZSH="${ANSIBLE_HOME}/.oh-my-zsh"
+
+# Install Oh-My-Zsh with specific version tag for stability
+RUN git clone --depth=1 --branch master https://github.com/ohmyzsh/ohmyzsh.git "${ZSH}"
+
+# Install ZSH plugins (using latest stable versions for compatibility)
+RUN git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH}/custom/plugins/zsh-autosuggestions" && \
+    git clone --depth=1 https://github.com/zsh-users/zsh-completions "${ZSH}/custom/plugins/zsh-completions" && \
+    git clone --depth=1 https://github.com/zsh-users/zsh-history-substring-search.git "${ZSH}/custom/plugins/zsh-history-substring-search" && \
+    git clone --depth=1 https://github.com/denysdovhan/spaceship-prompt.git "${ZSH}/custom/themes/spaceship-prompt" && \
+    git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH}/custom/plugins/zsh-syntax-highlighting"
+
+# Copy requirements file for dependency management
+COPY --chown=ansible:ansible requirements-alpine.txt /tmp/requirements.txt
+
+# Install Python dependencies
+RUN "${VENV_NAME}/bin/pip" install --no-cache-dir -r /tmp/requirements.txt && \
+    rm /tmp/requirements.txt && \
+    # Verify setuptools version
+    echo "Installed packages:" && \
+    "${VENV_NAME}/bin/pip" list | grep -E "(ansible|setuptools|cryptography)" && \
+    # Clean pip cache
+    rm -rf "${ANSIBLE_HOME}/.cache/pip"
+
+# Copy ZSH configuration
+COPY --chown=ansible:ansible ./config/zsh/.zshrc ${ANSIBLE_HOME}/.zshrc
+
+# Create SSH directory with proper permissions
+RUN chmod 700 ${ANSIBLE_HOME}/.ssh
+
+# Set the default shell to zsh
+CMD ["/bin/zsh"]
+
+# Set workdir to ansible directory
+WORKDIR "${ANSIBLE_WORKDIR}"
