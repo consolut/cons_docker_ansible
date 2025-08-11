@@ -1,0 +1,43 @@
+# SSH Keys - Never commit real keys
+config/ssh_keys/*
+!config/ssh_keys/.gitkeep
+!config/ssh_keys/README.md
+*.key
+*.pem
+id_rsa*
+id_dsa*
+id_ecdsa*
+id_ed25519*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+.venv
+
+# Ansible
+*.retry
+ansible.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore.local
+
+# Temporary files
+*.tmp
+*.bak
+*.backup
