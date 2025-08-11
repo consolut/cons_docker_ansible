@@ -13,24 +13,55 @@ It includes various tools and configurations to facilitate working with Ansible.
 
 ## Build
 
-To build the Docker image, run the following command in the directory of the Dockerfile:
+### Single Architecture Build
+To build the Docker image for your current architecture:
 
 ```bash
 docker build -t ansible_docker .
 ```
 
-## Usage
-
-### Quickstart start from docker hub
+### Multi-Architecture Build (ARM64 + AMD64)
+To build for both ARM and x86 platforms using Docker Buildx:
 
 ```bash
-docker run -it -d --name ansible_docker rotecodefraktion/ansible_docker
+# Create and use a new builder instance
+docker buildx create --name multiarch --use
+
+# Build and push multi-architecture image
+docker buildx build --platform linux/amd64,linux/arm64 \
+  -t rotecodefraktion/ansible_docker:secure \
+  -t rotecodefraktion/ansible_docker:latest \
+  --push .
+
+# Optional: Remove builder when done
+docker buildx rm multiarch
 ```
 
-Mount an persistent directory (e.g /tmp/ansible_docker ) to the container run and name the container ansible
+**Note:** The image on Docker Hub supports both ARM64 and AMD64 architectures.
 
+## Usage
+
+### Security Notice 🔒
+The `:secure` tag includes comprehensive security improvements including:
+- Fixed Ubuntu 24.04 LTS version
+- Removed default SSH keys (mount at runtime)
+- Limited sudo access
+- Enabled SSH host key verification
+- Pinned dependency versions (CVE-2024-26130 fixed)
+
+### Quickstart from Docker Hub
+
+**Secure version (recommended):**
 ```bash
-docker run -v /tmp/docker_ansible:/install/ansible -it -d --name ansible_docker rotecodefraktion/ansible_docker
+docker run -it -d --name ansible_docker rotecodefraktion/ansible_docker:secure
+```
+
+**With persistent storage and SSH keys:**
+```bash
+docker run -v /tmp/docker_ansible:/install/ansible \
+           -v ~/.ssh:/home/ansible/.ssh:ro \
+           -it -d --name ansible_docker \
+           rotecodefraktion/ansible_docker:secure
 ```
 
 You can create a fresh ssh key-pair with ssh-keygen inside the container or you can use your own ssh key from outside the container. To copy your own ssh-key to the container:

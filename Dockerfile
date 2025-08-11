@@ -13,9 +13,9 @@ RUN apt-get update
 
 # Install zsh and git
 RUN apt-get install zsh git sudo -y 
-# Install Pyhton3 and Python3-pip and other tools
-# and clean up all
-RUN apt-get install -y gcc python3 python3-pip python3-venv ; \
+# Install Python3 and build tools 
+# and clean up all  
+RUN apt-get install -y gcc python3 python3-venv python3-dev python3-pip ; \
     apt-get install -y wget curl openssh-client vim ; \
     apt-get install -y locales-all
 RUN apt-get clean all
@@ -40,7 +40,11 @@ RUN echo "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" >>
 USER ansible
 SHELL ["/bin/bash", "-c"]
 
-RUN python3 -m venv "${VENV_NAME}"
+# Create isolated venv without system packages and install pip/setuptools from scratch
+RUN python3 -m venv --without-pip "${VENV_NAME}" && \
+    curl -sS https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py && \
+    "${VENV_NAME}"/bin/python3 /tmp/get-pip.py pip==24.0 setuptools==78.1.1 && \
+    rm /tmp/get-pip.py
 
 RUN source "${VENV_NAME}"/bin/activate 
 ENV PATH="${VENV_NAME}/bin:/home/ansible/.local/bin:${PATH}"
@@ -61,10 +65,12 @@ RUN git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH}
 # Copy requirements file for dependency management
 COPY --chown=ansible:ansible requirements.txt /tmp/requirements.txt
 
-# Upgrade pip to specific version and install dependencies
-RUN pip3 install --upgrade pip==23.3.2 && \
+# Install dependencies and verify setuptools version
+RUN pip3 install --upgrade setuptools==78.1.1 && \
     pip3 install -r /tmp/requirements.txt && \
-    rm /tmp/requirements.txt
+    rm /tmp/requirements.txt && \
+    echo "Installed setuptools version:" && \
+    pip3 list | grep setuptools
 
 # copy only ZSH configuration into image
 # SSH keys should be mounted at runtime, not built into image
