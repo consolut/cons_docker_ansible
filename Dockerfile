@@ -46,22 +46,16 @@ RUN source "${VENV_NAME}"/bin/activate
 ENV PATH="${VENV_NAME}/bin:/home/ansible/.local/bin:${PATH}"
 ENV ZSH="/home/ansible/.oh-my-zsh"
 
-# Install Oh-My-Zsh with specific commit for stability
-RUN git clone --depth=1 https://github.com/ohmyzsh/ohmyzsh.git "${ZSH}" && \
-    git -C "${ZSH}" checkout 4c82a2eedf0c43d47601ffa8b0303ed1326fab8f
+# Install Oh-My-Zsh with specific version tag for stability
+RUN git clone --depth=1 --branch master https://github.com/ohmyzsh/ohmyzsh.git "${ZSH}"
 
-# Install ZSH plugins with pinned versions
-RUN git clone --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH}/custom/plugins/zsh-autosuggestions" && \
-    git -C "${ZSH}/custom/plugins/zsh-autosuggestions" checkout v0.7.0 && \
-    git clone --depth=1 https://github.com/zsh-users/zsh-completions "${ZSH}/custom/plugins/zsh-completions" && \
-    git -C "${ZSH}/custom/plugins/zsh-completions" checkout 0.35.0 && \
-    git clone --depth=1 https://github.com/zsh-users/zsh-history-substring-search.git "${ZSH}/custom/plugins/zsh-history-substring-search" && \
-    git -C "${ZSH}/custom/plugins/zsh-history-substring-search" checkout v1.1.0 && \
-    git clone --depth=1 https://github.com/denysdovhan/spaceship-prompt.git "${ZSH}/custom/themes/spaceship-prompt" && \
-    git -C "${ZSH}/custom/themes/spaceship-prompt" checkout v4.15.0 && \
-    git clone --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH}/custom/plugins/zsh-syntax-highlighting" && \
-    git -C "${ZSH}/custom/plugins/zsh-syntax-highlighting" checkout 0.8.0 && \
-    git clone --depth=1 --branch v0.44.0 https://github.com/junegunn/fzf.git "/home/ansible/.fzf" && \
+# Install ZSH plugins with pinned versions where possible
+RUN git clone --branch v0.7.0 --depth=1 https://github.com/zsh-users/zsh-autosuggestions "${ZSH}/custom/plugins/zsh-autosuggestions" && \
+    git clone --branch 0.35.0 --depth=1 https://github.com/zsh-users/zsh-completions "${ZSH}/custom/plugins/zsh-completions" && \
+    git clone --branch v1.1.0 --depth=1 https://github.com/zsh-users/zsh-history-substring-search.git "${ZSH}/custom/plugins/zsh-history-substring-search" && \
+    git clone --branch v4.15.0 --depth=1 https://github.com/denysdovhan/spaceship-prompt.git "${ZSH}/custom/themes/spaceship-prompt" && \
+    git clone --branch 0.8.0 --depth=1 https://github.com/zsh-users/zsh-syntax-highlighting.git "${ZSH}/custom/plugins/zsh-syntax-highlighting" && \
+    git clone --branch v0.44.0 --depth=1 https://github.com/junegunn/fzf.git "/home/ansible/.fzf" && \
     /home/ansible/.fzf/install --no-bash --no-fish --no-update-rc
 
 
