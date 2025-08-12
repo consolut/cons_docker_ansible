@@ -34,6 +34,10 @@ RUN apk update && \
     vim \
     sudo \
     ca-certificates \
+    jq \
+    jp \
+    gpg \
+    python3-paramiko \
     tzdata && \
     # Set timezone
     cp /usr/share/zoneinfo/UTC /etc/localtime && \
