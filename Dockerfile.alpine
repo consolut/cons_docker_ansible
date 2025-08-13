@@ -57,7 +57,7 @@ RUN adduser -D -s /bin/zsh -u "${ANSIBLE_USER_UID}" -h "${ANSIBLE_HOME}" "${ANSI
     chown -R "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_HOME}" && \
     chown -R "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_WORKDIR}" && \
     # SSH config with improved security
-    echo "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" >> "${ANSIBLE_HOME}/.ssh/config" && \
+    printf "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" >> "${ANSIBLE_HOME}/.ssh/config" && \
     chown "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_HOME}/.ssh/config" && \
     chmod 600 "${ANSIBLE_HOME}/.ssh/config"
 
