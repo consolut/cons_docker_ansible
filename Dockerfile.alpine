@@ -60,10 +60,10 @@ RUN adduser -D -s /bin/zsh -u "${ANSIBLE_USER_UID}" -h "${ANSIBLE_HOME}" "${ANSI
     install -dm0700 -o "${ANSIBLE_USER}" -g "${ANSIBLE_USER}" "${ANSIBLE_HOME}/.ssh" && \
     install -dm0750 -o "${ANSIBLE_USER}" -g "${ANSIBLE_USER}" "${GLOBAL_WORKDIR}" && \
     install -dm0750 -o "${ANSIBLE_USER}" -g "${ANSIBLE_USER}" "${ANSIBLE_WORKDIR}" && \
-    # SSH config with improved security
-    printf "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" >> "${ANSIBLE_HOME}/.ssh/config" && \
-    chown "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_HOME}/.ssh/config" && \
-    chmod 600 "${ANSIBLE_HOME}/.ssh/config"
+    # SSH config with improved security - create temp file then install with proper perms
+    printf "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" > /tmp/ssh_config && \
+    install -m 0600 -o "${ANSIBLE_USER}" -g "${ANSIBLE_USER}" /tmp/ssh_config "${ANSIBLE_HOME}/.ssh/config" && \
+    rm /tmp/ssh_config
 
 # Create virtual environment as root, then switch ownership
 RUN python3 -m venv "${VENV_NAME}" && \
