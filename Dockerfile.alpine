@@ -14,6 +14,7 @@ LABEL org.opencontainers.image.documentation="https://github.com/davidkrcek/dock
 ARG ANSIBLE_USER="ansible"
 ARG ANSIBLE_USER_UID="1002"
 ARG ANSIBLE_HOME="/home/ansible"
+ARG GLOBAL_WORKDIR="/install"
 ARG ANSIBLE_WORKDIR="/install/ansible"
 ENV VENV_NAME="${ANSIBLE_HOME}/venv"
 
@@ -56,10 +57,9 @@ RUN adduser -D -s /bin/zsh -u "${ANSIBLE_USER_UID}" -h "${ANSIBLE_HOME}" "${ANSI
     addgroup "${ANSIBLE_USER}" wheel && \
     # Limited sudo access - only for specific ansible commands
     echo '%wheel ALL=(ALL) NOPASSWD: /usr/bin/ansible-playbook, /usr/bin/ansible, /usr/bin/ansible-vault' > /etc/sudoers.d/ansible && \
-    mkdir -p "${ANSIBLE_HOME}/.ssh" && \
-    mkdir -p "${ANSIBLE_WORKDIR}" && \
-    chown -R "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_HOME}" && \
-    chown -R "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_WORKDIR}" && \
+    install -dm0700 -o "${ANSIBLE_USER}" -g "${ANSIBLE_USER}" "${ANSIBLE_HOME}/.ssh" && \
+    install -dm0750 -o "${ANSIBLE_USER}" -g "${ANSIBLE_USER}" "${GLOBAL_WORKDIR}" && \
+    install -dm0750 -o "${ANSIBLE_USER}" -g "${ANSIBLE_USER}" "${ANSIBLE_WORKDIR}" && \
     # SSH config with improved security
     printf "Host *\n\tStrictHostKeyChecking accept-new\n\tHashKnownHosts yes\n" >> "${ANSIBLE_HOME}/.ssh/config" && \
     chown "${ANSIBLE_USER}:${ANSIBLE_USER}" "${ANSIBLE_HOME}/.ssh/config" && \
