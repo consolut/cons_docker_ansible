@@ -27,6 +27,7 @@ RUN apk update && \
     python3-dev \
     musl-dev \
     libffi-dev \
+    openssl \
     openssl-dev \
     openssh-client \
     git \
@@ -38,7 +39,6 @@ RUN apk update && \
     jq \
     jp \
     gpg \
-    python3-paramiko \
     tzdata && \
     # Set timezone
     cp /usr/share/zoneinfo/UTC /etc/localtime && \
